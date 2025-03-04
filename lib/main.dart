@@ -32,10 +32,13 @@ class DateTag {
 
   DateTag({this.id, required this.date, required this.tag});
 
-  Map<String, dynamic> toMap() => {'id': id, 'date': date, 'tag': tag};
+  Map<String, dynamic> toMap() =>
+      {'id': id, 'date': date.millisecondsSinceEpoch, 'tag': tag};
 
-  factory DateTag.fromMap(Map<String, dynamic> map) =>
-      DateTag(id: map['id'], date: map['date'], tag: map['tag']);
+  factory DateTag.fromMap(Map<String, dynamic> map) => DateTag(
+      id: map['id'],
+      date: DateTime.fromMillisecondsSinceEpoch(map['date']),
+      tag: map['tag']);
 }
 
 class DatabaseHelper {
@@ -60,7 +63,7 @@ class DatabaseHelper {
       onCreate: (db, version) => db.execute('''
         CREATE TABLE date_tags(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          date INTEGER
+          date INTEGER,
           tag TEXT NOT NULL
         )'''),
     );
@@ -167,7 +170,18 @@ class _DateTagScreenState extends State<DateTagScreen> {
                     child: Text(DateFormat("MMM dd").format(_selectedDate)))
               ],
             ),
-          )
+          ),
+          Expanded(
+              child: ListView.builder(
+                  itemCount: _tags.length,
+                  itemBuilder: (ctx, i) => ListTile(
+                        title: Text(_tags[i].tag),
+                        subtitle:
+                            Text(DateFormat.yMMMd().format(_tags[i].date)),
+                        trailing: IconButton(
+                            onPressed: () => _deleteTag(_tags[i].id!),
+                            icon: const Icon(Icons.delete, color: Colors.red)),
+                      )))
         ],
       ),
     );
